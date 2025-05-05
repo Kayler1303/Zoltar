@@ -1,0 +1,16 @@
+# ... existing code ...
+sqlalchemy
+alembic
+fastapi[all]
+uvicorn[standard]
+python-jose[cryptography]
+passlib
+bcrypt>=3.2.0
+python-multipart
+python-dateutil
+msal
+requests
+google-generativeai
+pypdf
+python-docx
+# ... existing code ...
