@@ -6,8 +6,13 @@ import logging
 import requests
 import json
 
-from .. import crud, schemas, models, auth, llm_utils
-from ..database import get_db
+# Change to direct imports as modules are now at the same level in /app
+import crud
+import schemas
+import models
+import auth
+import llm_utils
+from database import get_db
 
 logger = logging.getLogger(__name__)
 

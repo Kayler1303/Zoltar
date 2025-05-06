@@ -10,11 +10,11 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-# Revert to relative imports
-from . import crud 
-from . import models 
-from . import schemas 
-from .database import get_db
+# Change to direct imports
+import crud 
+import models 
+import schemas 
+from database import get_db
 
 load_dotenv()
 
