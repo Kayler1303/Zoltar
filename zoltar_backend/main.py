@@ -83,84 +83,70 @@ def check_due_reminders_job():
     """Job function to check for due reminders and handle persistent reminders."""
     logger.info("Scheduler job: Checking for due reminders...")
     db = SessionLocal() # Create a new session for the job
-    now_utc = datetime.now(timezone.utc)
-    # Eager load owner relationship to get user object easily
-    reminders_to_check = db.query(models.Reminder).options(
-        joinedload(models.Reminder.owner)
-    ).filter(
-        models.Reminder.is_active == True,
-        models.Reminder.trigger_datetime <= now_utc,
-        (models.Reminder.snoozed_until == None) | (models.Reminder.snoozed_until <= now_utc)
-    ).all()
+    try: # Add try block
+        now_utc = datetime.now(timezone.utc)
+        # Eager load owner relationship to get user object easily
+        reminders_to_check = db.query(models.Reminder).options(
+            joinedload(models.Reminder.owner)
+        ).filter(
+            models.Reminder.is_active == True,
+            models.Reminder.trigger_datetime <= now_utc,
+            (models.Reminder.snoozed_until == None) | (models.Reminder.snoozed_until <= now_utc)
+        ).all()
 
-    reminders_to_notify = []
+        reminders_to_notify = []
 
-    # Initial check for reminders that just became due
-    for reminder in reminders_to_check:
-        if reminder.last_notified_at is None or reminder.last_notified_at < reminder.trigger_datetime:
-            reminders_to_notify.append(reminder)
+        # Initial check for reminders that just became due
+        for reminder in reminders_to_check:
+            if reminder.last_notified_at is None or reminder.last_notified_at < reminder.trigger_datetime:
+                reminders_to_notify.append(reminder)
 
-    # Check for persistent reminders needing re-notification
-    for reminder in reminders_to_check: # Iterate through already fetched reminders
-        if reminder.remind_frequency_minutes is not None and reminder.last_notified_at is not None:
-             # Check if frequency has elapsed since last notification
-            last_notified_aware = reminder.last_notified_at.astimezone(UTC) # Ensure timezone aware
-            frequency_delta = timedelta(minutes=reminder.remind_frequency_minutes)
-            if last_notified_aware + frequency_delta <= now_utc:
-                 if reminder not in reminders_to_notify: # Avoid duplicates
-                    logger.info(f"  Adding reminder ID={reminder.id} for persistent notification.")
-                    reminders_to_notify.append(reminder)
+        # Check for persistent reminders needing re-notification
+        for reminder in reminders_to_check: # Iterate through already fetched reminders
+            if reminder.remind_frequency_minutes is not None and reminder.last_notified_at is not None:
+                last_notified_aware = reminder.last_notified_at.astimezone(UTC) # Ensure timezone aware
+                frequency_delta = timedelta(minutes=reminder.remind_frequency_minutes)
+                if last_notified_aware + frequency_delta <= now_utc:
+                    if reminder not in reminders_to_notify: # Avoid duplicates
+                        logger.info(f"  Adding reminder ID={reminder.id} for persistent notification.")
+                        reminders_to_notify.append(reminder)
 
-    if not reminders_to_notify:
-        logger.info("Scheduler job: No reminders due for notification.")
-    else:
-        logger.info(f"Scheduler job: Found {len(reminders_to_notify)} unique reminders for notification.")
-        for reminder in reminders_to_notify:
-            # --- Prepare and Send Push Notification --- 
-            owner = reminder.owner # Access eagerly loaded owner
-            if owner and owner.device_token:
-                alert_body = reminder.description or reminder.title or "Your Zoltar reminder is due!"
-                # Prepare custom data (optional)
-                custom_data = {
-                    "reminder_id": reminder.id
-                    # Add other relevant info for the app, e.g., deep link
-                    # "deep_link": f"zoltar://reminders/{reminder.id}"
-                }
-                
-                # Send the notification via push_utils
-                success = push_utils.send_apns_notification(
-                    device_token=owner.device_token,
-                    alert_body=alert_body,
-                    custom_data=custom_data
-                    # badge_count can be managed client-side or calculated server-side if needed
-                )
-                if not success:
-                    logger.error(f"Failed to send push notification for reminder ID={reminder.id} to user ID={owner.id}")
+        if not reminders_to_notify:
+            logger.info("Scheduler job: No reminders due for notification.")
+        else:
+            logger.info(f"Scheduler job: Found {len(reminders_to_notify)} unique reminders for notification.")
+            for reminder in reminders_to_notify:
+                owner = reminder.owner
+                if owner and owner.device_token:
+                    alert_body = reminder.description or reminder.title or "Your Zoltar reminder is due!"
+                    custom_data = {"reminder_id": reminder.id}
+                    
+                    success = push_utils.send_apns_notification(
+                        device_token=owner.device_token,
+                        alert_body=alert_body,
+                        custom_data=custom_data
+                    )
+                    if not success:
+                        logger.error(f"Failed to send push notification for reminder ID={reminder.id} to user ID={owner.id}")
+                    else:
+                        logger.info(f"Push notification sent successfully for reminder ID={reminder.id}")
                 else:
-                     logger.info(f"Push notification sent successfully for reminder ID={reminder.id}")
-            else:
-                logger.warning(f"Cannot send push notification for reminder ID={reminder.id}: Owner or device token missing.")
-            # --- End Push Notification --- 
+                    logger.warning(f"Cannot send push notification for reminder ID={reminder.id}: Owner or device token missing.")
 
-            # Log TRIGGERED event (as before)
-            trigger_event = models.ReminderEvent(
-                reminder_id=reminder.id,
-                expected_trigger_time=reminder.trigger_datetime, 
-                action_time=now_utc,
-                action_type=models.ReminderActionType.TRIGGERED
-            )
-            db.add(trigger_event)
-
-            # Update last_notified_at on the reminder (as before)
-            reminder.last_notified_at = now_utc
-            db.add(reminder)
-
-            # Original logging (keep for now)
-            logger.info(f"NOTIFYING (Internal Log): ID={reminder.id}, Title='{reminder.title}', Due='{reminder.trigger_datetime}', LastNotified='{reminder.last_notified_at}'")
-        
-        db.commit() # Commit all events and updates
-
-    db.close() # Close session
+                trigger_event = models.ReminderEvent(
+                    reminder_id=reminder.id,
+                    expected_trigger_time=reminder.trigger_datetime, 
+                    action_time=now_utc,
+                    action_type=models.ReminderActionType.TRIGGERED
+                )
+                db.add(trigger_event)
+                reminder.last_notified_at = now_utc
+                db.add(reminder)
+                logger.info(f"NOTIFYING (Internal Log): ID={reminder.id}, Title='{reminder.title}', Due='{reminder.trigger_datetime}', LastNotified='{reminder.last_notified_at}'")
+            
+            db.commit() 
+    finally: # Add finally block
+        db.close() # Ensure session is closed
 
 @app.on_event("startup")
 async def startup_event():
