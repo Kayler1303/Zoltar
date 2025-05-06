@@ -1,6 +1,44 @@
+# Environment variables
+.env
+
+# Database files
+zoltar.db
+*.sqlite3
+*.db
+
+# Python cache/build files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+/venv/
 venv/
-    __pycache__/
-    *.db
-    uploads/
-    .DS_Store
-    *.log 
+.venv/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE / Editor files
+.idea/
+.vscode/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Zoltar specific temp/log files if any
+*.log
+
+# Ignore embedded iOS repo (if not using submodules)
+# zoltar_ios/Zoltar/
+
+# Config file in backend (already ignored there too, but good practice)
+zoltar_backend/config.py

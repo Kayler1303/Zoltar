@@ -7,12 +7,15 @@ from alembic import context
 
 # Ensure the app directory is in the path for importing models
 import os, sys
-sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
+# Add parent directory to sys.path to find zoltar_backend
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
 # Import the Base from your application's models
-from zoltar_backend.database import Base
+from database import Base
 # Import your models module to ensure they are registered with Base
-from zoltar_backend import models
+from models import * # Import all symbols from models.py
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
