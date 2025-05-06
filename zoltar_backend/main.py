@@ -18,7 +18,8 @@ import push_utils # Import push_utils
 from database import SessionLocal, engine, get_db # Import SessionLocal for job
 from routers import ( # Assuming routers is a directory at the same level
     categories, projects, tasks, files, reminders, contacts, reports,
-    users, chat, auth_microsoft, lists, calendar, notes # Added new routers
+    # users, # Commented out as it seems to be causing an ImportError
+    chat, auth_microsoft, lists, calendar, notes # Added new routers
 )
 
 # Configure basic logging
@@ -186,6 +187,7 @@ app.include_router(files.router)
 app.include_router(reminders.router)
 app.include_router(contacts.router)
 app.include_router(reports.router)
+# app.include_router(users.router) # Commented out to match import
 app.include_router(auth_microsoft.router)
 app.include_router(calendar.router)
 app.include_router(notes.router)
