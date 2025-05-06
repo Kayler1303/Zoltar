@@ -22,5 +22,7 @@ psycopg2-binary # PostgreSQL driver
 dotenv
 # Add pypdf for PDF processing
 pypdf
+# Add python-docx for .docx file processing
+python-docx
 
 # Add pypdf for PDF processing 
