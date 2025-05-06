@@ -9,9 +9,9 @@ from dateutil.tz import UTC # Import UTC for timezone handling
 # from starlette.middleware.session import SessionMiddleware 
 from fastapi.middleware.cors import CORSMiddleware
 
-# Use relative imports for sibling modules
-from . import crud, models, schemas, auth, push_utils # Import push_utils
-from .database import SessionLocal, engine, get_db, SessionLocal # Import SessionLocal for job
+# Change relative imports to absolute imports
+from zoltar_backend import crud, models, schemas, auth, push_utils # Import push_utils
+from zoltar_backend.database import SessionLocal, engine, get_db # Import SessionLocal for job
 # Keep router import absolute as it refers to a sub-package
 from zoltar_backend.routers import (
     categories, projects, tasks, files, reminders, contacts, reports,
