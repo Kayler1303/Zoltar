@@ -6,8 +6,8 @@ from typing import Optional, List, Union, Tuple, Dict, Any # Import Optional, Li
 from dateutil.rrule import rrulestr, rrule
 from dateutil.tz import UTC # Import UTC for timezone awareness
 
-# Use relative imports for sibling modules
-from . import models, schemas, auth
+# Change relative imports to absolute imports
+from zoltar_backend import models, schemas, auth
 
 from sqlalchemy import func, or_, and_ # Import func for count, or_ for combining filters
 import sqlalchemy.orm # Import orm for joinedload
