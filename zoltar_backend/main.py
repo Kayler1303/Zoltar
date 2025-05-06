@@ -9,15 +9,16 @@ from dateutil.tz import UTC # Import UTC for timezone handling
 # from starlette.middleware.session import SessionMiddleware 
 from fastapi.middleware.cors import CORSMiddleware
 
-# Revert to relative imports
-from . import crud, models, schemas, auth, push_utils
-from .database import SessionLocal, engine, get_db
-# Keep router import absolute as it refers to a sub-package
-from zoltar_backend.routers import (
+# Change relative imports to direct imports
+import crud
+import models
+import schemas
+import auth
+import push_utils # Import push_utils
+from database import SessionLocal, engine, get_db # Import SessionLocal for job
+from routers import ( # Assuming routers is a directory at the same level
     categories, projects, tasks, files, reminders, contacts, reports,
-    auth_microsoft, calendar, notes, lists, chat # Added chat router
-    # Removed llm_summary
-    # Removed chat
+    users, chat, auth_microsoft, lists, calendar, notes # Added new routers
 )
 
 # Configure basic logging
