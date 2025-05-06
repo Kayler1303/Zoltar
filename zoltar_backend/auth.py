@@ -25,14 +25,24 @@ try:
     with open(SECRET_KEY_PATH, 'r') as f:
         SECRET_KEY = f.read().strip()
     if not SECRET_KEY:
-        print(f"ERROR: Secret key file {SECRET_KEY_PATH} is empty.")
-        # Decide how to handle - exit? raise error?
+        # Log the error and raise an exception to halt startup
+        error_msg = f"CRITICAL: Secret key file {SECRET_KEY_PATH} is empty. Application cannot start."
+        print(error_msg) # For Cloud Run logs
+        raise RuntimeError(error_msg)
 except FileNotFoundError:
-    print(f"ERROR: Secret key file not found at {SECRET_KEY_PATH}. Ensure SECRET_KEY_PATH env var is set correctly and the secret is mounted.")
-    # Decide how to handle
+    error_msg = f"CRITICAL: Secret key file not found at {SECRET_KEY_PATH}. Ensure SECRET_KEY_PATH env var is set and the secret is mounted. Application cannot start."
+    print(error_msg)
+    raise RuntimeError(error_msg)
 except Exception as e:
-    print(f"ERROR: Could not read secret key from {SECRET_KEY_PATH}: {e}")
-    # Decide how to handle
+    error_msg = f"CRITICAL: Could not read secret key from {SECRET_KEY_PATH}: {e}. Application cannot start."
+    print(error_msg)
+    raise RuntimeError(error_msg)
+
+# Add an explicit check after the try-except block
+if SECRET_KEY is None:
+    error_msg = "CRITICAL: SECRET_KEY is None after attempting to load. This should not happen if exceptions are raised correctly. Application cannot start."
+    print(error_msg)
+    raise RuntimeError(error_msg)
 
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
