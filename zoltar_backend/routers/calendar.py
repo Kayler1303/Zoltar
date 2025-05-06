@@ -5,8 +5,12 @@ from typing import Dict, Optional, List
 import datetime # Need datetime for duration calculation
 
 # Zoltar imports
-from .. import crud, models, schemas, auth, auth_utils_ms
-from ..database import get_db
+import crud
+import models
+import schemas
+import auth
+import auth_utils_ms # Assuming this is also now at the /app level
+from database import get_db
 
 logger = logging.getLogger(__name__)
 

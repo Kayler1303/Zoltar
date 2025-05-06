@@ -7,12 +7,15 @@ from sqlalchemy.orm import Session
 import logging
 from typing import Optional, Dict
 
-# Use absolute imports relative to the package root
-from zoltar_backend import crud, models, schemas, auth
-from zoltar_backend.database import get_db
+# Change to direct imports
+import crud
+import models
+import schemas
+import auth
+from database import get_db
 
-# Import the utility functions we just created
-from .. import auth_utils_ms 
+# Import the utility functions directly
+import auth_utils_ms 
 
 logger = logging.getLogger(__name__)
 

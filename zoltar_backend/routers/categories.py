@@ -2,9 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-# Use absolute imports within the same package structure
-from zoltar_backend import crud, models, schemas, auth
-from zoltar_backend.database import get_db
+# Change to direct imports
+import crud
+import models
+import schemas
+import auth
+from database import get_db
 
 router = APIRouter(
     prefix="/categories",

@@ -9,10 +9,14 @@ from fastapi import (
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-# Use absolute imports relative to the package root
-from zoltar_backend import crud, models, schemas, auth
-from zoltar_backend.database import get_db
-from zoltar_backend import llm_utils, file_utils # Import new utils
+# Change to direct imports
+import crud
+import models
+import schemas
+import auth
+from database import get_db
+import llm_utils # Changed from zoltar_backend import
+import file_utils # Changed from zoltar_backend import
 import logging # Import logging if not already present
 
 # Define the base directory for uploads relative to the project root
