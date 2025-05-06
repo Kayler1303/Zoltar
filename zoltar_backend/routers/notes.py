@@ -4,8 +4,8 @@ from typing import List, Optional
 import logging
 
 # Zoltar imports
-from zoltar_backend import crud, models, schemas, auth, llm_utils
-from zoltar_backend.database import get_db
+from .. import crud, models, schemas, auth, llm_utils
+from ..database import get_db
 
 logger = logging.getLogger(__name__)
 

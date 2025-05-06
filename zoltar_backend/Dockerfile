@@ -31,4 +31,4 @@ EXPOSE 8080
 # Define the command to run the application
 # Use gunicorn as the production server, listening on the port expected by Cloud Run
 # The number of workers (-w 4) can be adjusted based on expected load and Cloud Run instance size
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "zoltar_backend.main:app"] 
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "main:app"] 

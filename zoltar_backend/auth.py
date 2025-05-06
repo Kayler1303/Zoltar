@@ -10,11 +10,11 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-# Change relative imports to absolute imports
-from zoltar_backend import crud 
-from zoltar_backend import models 
-from zoltar_backend import schemas 
-from zoltar_backend.database import get_db
+# Revert to relative imports
+from . import crud 
+from . import models 
+from . import schemas 
+from .database import get_db
 
 load_dotenv()
 

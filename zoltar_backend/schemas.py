@@ -2,8 +2,8 @@ from pydantic import BaseModel, EmailStr, field_validator, model_validator, Fiel
 from datetime import datetime
 from typing import Optional, Any, List, Dict
 
-# Import Enum from models using absolute path
-from zoltar_backend.models import ProjectStatus, TaskStatus, ReminderType, ReminderActionType
+# Import Enum from models using relative path
+from .models import ProjectStatus, TaskStatus, ReminderType, ReminderActionType
 
 # Base model for User - common attributes
 class UserBase(BaseModel):

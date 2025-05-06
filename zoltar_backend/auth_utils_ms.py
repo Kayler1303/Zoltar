@@ -4,10 +4,10 @@ import logging
 import json # Needed for cache serialization
 from typing import Optional, Union, Dict, List, Any
 from sqlalchemy.orm import Session # Need Session for DB access
-from zoltar_backend import models # Need User model
+from . import models # Need User model
 import requests # Add requests import if not already present
 from datetime import datetime, timezone # Make sure datetime and timezone are imported
-from zoltar_backend import schemas # Need CalendarEventCreate schema
+from . import schemas # Need CalendarEventCreate schema
 
 logger = logging.getLogger(__name__)
 
