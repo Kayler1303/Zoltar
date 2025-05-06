@@ -18,7 +18,22 @@ from zoltar_backend.database import get_db
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+# Read secret key from file path specified in env var
+SECRET_KEY_PATH = os.getenv("SECRET_KEY_PATH", "/secrets/jwt/key") # Default path if not set
+SECRET_KEY = None
+try:
+    with open(SECRET_KEY_PATH, 'r') as f:
+        SECRET_KEY = f.read().strip()
+    if not SECRET_KEY:
+        print(f"ERROR: Secret key file {SECRET_KEY_PATH} is empty.")
+        # Decide how to handle - exit? raise error?
+except FileNotFoundError:
+    print(f"ERROR: Secret key file not found at {SECRET_KEY_PATH}. Ensure SECRET_KEY_PATH env var is set correctly and the secret is mounted.")
+    # Decide how to handle
+except Exception as e:
+    print(f"ERROR: Could not read secret key from {SECRET_KEY_PATH}: {e}")
+    # Decide how to handle
+
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 

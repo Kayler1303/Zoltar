@@ -16,7 +16,20 @@ logger = logging.getLogger(__name__)
 # Ensure these are set in your environment before running the app.
 # DO NOT commit the client secret directly into the code.
 MS_CLIENT_ID = os.environ.get("MS_CLIENT_ID", "YOUR_MS_CLIENT_ID_HERE")
-MS_CLIENT_SECRET = os.environ.get("MS_CLIENT_SECRET", "YOUR_MS_CLIENT_SECRET_HERE")
+
+# Read MS Client Secret from file path
+MS_CLIENT_SECRET_PATH = os.environ.get("MS_CLIENT_SECRET_PATH", "/secrets/ms/client_secret")
+MS_CLIENT_SECRET = None
+try:
+    with open(MS_CLIENT_SECRET_PATH, 'r') as f:
+        MS_CLIENT_SECRET = f.read().strip()
+    if not MS_CLIENT_SECRET:
+        logger.error(f"MS Client Secret file {MS_CLIENT_SECRET_PATH} is empty.")
+except FileNotFoundError:
+    logger.error(f"MS Client Secret file not found at {MS_CLIENT_SECRET_PATH}. Ensure MS_CLIENT_SECRET_PATH env var is set and secret is mounted.")
+except Exception as e:
+    logger.error(f"Error reading MS Client Secret from {MS_CLIENT_SECRET_PATH}: {e}")
+
 # Use 'common' for multi-tenant + personal accounts, 'organizations' for multi-tenant work/school only,
 # or a specific tenant ID (UUID) for single-tenant.
 MS_TENANT_ID = os.environ.get("MS_TENANT_ID", "common") 
@@ -30,14 +43,16 @@ MS_SCOPES = ["User.Read", "Calendars.ReadWrite"] # Removed offline_access
 # --- MSAL Client Initialization ---
 # Use a SerializableTokenCache instance for easier loading/saving
 token_cache = msal.SerializableTokenCache()
-msal_client = msal.ConfidentialClientApplication(
-    MS_CLIENT_ID,
-    authority=MS_AUTHORITY,
-    client_credential=MS_CLIENT_SECRET,
-    # Optional: Configure token cache (useful for production, complex for now)
-    # token_cache=msal.SerializableTokenCache() 
-    token_cache=token_cache # Pass the cache instance here
-)
+msal_client = None
+if MS_CLIENT_ID and MS_CLIENT_SECRET and MS_AUTHORITY:
+    msal_client = msal.ConfidentialClientApplication(
+        MS_CLIENT_ID,
+        authority=MS_AUTHORITY,
+        client_credential=MS_CLIENT_SECRET,
+        token_cache=token_cache 
+    )
+else:
+    logger.error("MSAL client could not be initialized. Missing MS_CLIENT_ID, MS_CLIENT_SECRET, or MS_AUTHORITY.")
 
 # --- Placeholder for Token Storage ---
 # WARNING: This is NOT production-ready. 

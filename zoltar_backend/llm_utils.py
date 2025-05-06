@@ -8,14 +8,21 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 # Configure the client. It will automatically pick up GOOGLE_API_KEY from env
+# Read Google API Key from file path
+GOOGLE_API_KEY_PATH = os.getenv("GOOGLE_API_KEY_PATH", "/secrets/google/key")
+GOOGLE_API_KEY = None
 try:
-    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-    # Check if API key was actually found
-    if not os.getenv("GOOGLE_API_KEY"):
-        logger.warning("GOOGLE_API_KEY environment variable not set. LLM calls will fail.")
+    with open(GOOGLE_API_KEY_PATH, 'r') as f:
+        GOOGLE_API_KEY = f.read().strip()
+    if not GOOGLE_API_KEY:
+        logger.error(f"Google API key file {GOOGLE_API_KEY_PATH} is empty.")
+    else:
+        genai.configure(api_key=GOOGLE_API_KEY)
+        logger.info("Google Generative AI configured successfully using key from file.")
+except FileNotFoundError:
+    logger.error(f"Google API key file not found at {GOOGLE_API_KEY_PATH}. Ensure GOOGLE_API_KEY_PATH env var is set and secret is mounted.")
 except Exception as e:
-    logger.error(f"Error configuring Google Generative AI: {e}")
-    # Potentially raise the error or handle it based on application needs
+    logger.error(f"Error configuring Google Generative AI from key file {GOOGLE_API_KEY_PATH}: {e}")
 
 # Specify the model - using the user-requested identifier
 MODEL_NAME = "gemini-2.0-flash"
@@ -88,7 +95,7 @@ def extract_intent_entities(text: str) -> Optional[Dict[str, Any]]:
         A dictionary containing 'intent' and 'entities' if successful,
         None otherwise.
     """
-    if not os.getenv("GOOGLE_API_KEY"):
+    if not GOOGLE_API_KEY:
         logger.error("LLM function called but GOOGLE_API_KEY is not set.")
         return None
         
@@ -234,7 +241,7 @@ def generate_response_text(intent: str, entities: dict, action_result: Any = Non
             return "It looks like you asked a question, but I couldn't figure out what it was. Could you rephrase?"
         # Call LLM again for the answer
         try:
-            if not os.getenv("GOOGLE_API_KEY"):
+            if not GOOGLE_API_KEY:
                  logger.error("LLM API key not set, cannot answer general question.")
                  return "Sorry, I can't answer general questions right now due to a configuration issue."
                  
@@ -339,7 +346,7 @@ def generate_response_text(intent: str, entities: dict, action_result: Any = Non
 # Example Usage (for testing purposes)
 if __name__ == '__main__':
     # Ensure GOOGLE_API_KEY is set in your environment before running this
-    if not os.getenv("GOOGLE_API_KEY"):
+    if not GOOGLE_API_KEY:
         print("Please set the GOOGLE_API_KEY environment variable to run this example.")
     else:
         test_text = "Remind me about the team sync tomorrow morning at 9am"
@@ -357,7 +364,7 @@ if __name__ == '__main__':
 # --- Helper Function --- 
 def summarize_text_gemini(text_to_summarize: str) -> Optional[str]:
     """Summarizes the given text using the configured Gemini model."""
-    if not os.getenv("GOOGLE_API_KEY"):
+    if not GOOGLE_API_KEY:
         logger.error("Cannot summarize text: GOOGLE_API_KEY is not configured.")
         return None
 
