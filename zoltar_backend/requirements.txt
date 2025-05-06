@@ -18,4 +18,9 @@ apns2
 
 # Production requirements
 gunicorn # WSGI/ASGI server
-psycopg2-binary # PostgreSQL driver 
+psycopg2-binary # PostgreSQL driver
+dotenv
+# Add pypdf for PDF processing
+pypdf
+
+# Add pypdf for PDF processing 
