@@ -29,7 +29,7 @@ DEFAULT_REMINDER_FREQUENCY_MINUTES = 15
 
 # --- Comment out if you ran alembic upgrade head --- 
 # Otherwise, this creates tables on startup (not recommended with Alembic)
-models.Base.metadata.create_all(bind=engine) 
+# models.Base.metadata.create_all(bind=engine) 
 
 app = FastAPI(
     title="Zoltar AI Assistant API",
