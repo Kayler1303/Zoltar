@@ -2,6 +2,7 @@ import logging
 import os # Import os
 from apns2.client import APNsClient
 from apns2.payload import Payload
+from apns2.credentials import TokenCredentials # Import TokenCredentials
 from dotenv import load_dotenv # Import load_dotenv
 
 # Load environment variables from .env file (especially for local dev)
@@ -22,10 +23,15 @@ APNS_USE_SANDBOX = APNS_USE_SANDBOX_STR.lower() in ['true', '1', 'yes']
 apns_client = None
 if all([APNS_TEAM_ID, APNS_AUTH_KEY_PATH, APNS_KEY_ID, APNS_TOPIC]):
     try:
-        apns_client = APNsClient(
-            team_id=APNS_TEAM_ID,
+        # Create TokenCredentials object
+        token_credentials = TokenCredentials(
             auth_key_path=APNS_AUTH_KEY_PATH,
             auth_key_id=APNS_KEY_ID,
+            team_id=APNS_TEAM_ID
+        )
+        # Initialize APNsClient with TokenCredentials
+        apns_client = APNsClient(
+            credentials=token_credentials,
             use_sandbox=APNS_USE_SANDBOX
         )
         logger.info(f"APNsClient initialized successfully (Sandbox: {APNS_USE_SANDBOX}).")
