@@ -15,7 +15,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./zoltar.db")
 if DATABASE_URL.startswith("postgresql"):
     # For PostgreSQL (or other DBs needing connection pooling/args)
     engine = create_engine(
-        DATABASE_URL
+        DATABASE_URL,
+        connect_args={"sslmode": "disable"}
         # Example: Add connection pool arguments if needed for production
         # pool_size=10,
         # max_overflow=20
