@@ -20,25 +20,8 @@ db_module_logger.info(f"database.py: DATABASE_URL read from environment: '{DATAB
 engine = None # Initialize engine
 
 if DATABASE_URL.startswith("postgresql"):
-    db_module_logger.info("database.py: Configuring engine for PostgreSQL with sslmode=disable.") # ADDED LOGGING
-    engine = create_engine(
-        DATABASE_URL,
-        connect_args={"sslmode": "disable"}
-        # Example: Add connection pool arguments if needed for production
-        # pool_size=10,
-        # max_overflow=20
-    )
-    # --- AGGRESSIVE DIAGNOSTIC (REMOVED) ---
-    # try:
-    #     db_module_logger.info("database.py: Attempting test connection immediately after engine creation...")
-    #     with engine.connect() as connection:
-    #         db_module_logger.info(f"database.py: Test connection successful! Connection: {connection}")
-    #         result = connection.execute(text("SELECT 1"))
-    #         db_module_logger.info(f"database.py: Test query result: {result.scalar_one()}")
-    #     db_module_logger.info("database.py: Test connection closed successfully.")
-    # except Exception as e:
-    #     db_module_logger.error(f"database.py: TEST CONNECTION FAILED! Error: {e}", exc_info=True)
-    # --- END AGGRESSIVE DIAGNOSTIC ---
+    db_module_logger.info("database.py: Configuring engine for PostgreSQL (no explicit sslmode).") # MODIFIED LOG
+    engine = create_engine(DATABASE_URL) # REMOVED connect_args
 
 elif DATABASE_URL: # Modified to ensure engine is always assigned if DATABASE_URL is not empty
     db_module_logger.info(f"database.py: Configuring engine for non-PostgreSQL (e.g., SQLite). Current DATABASE_URL: '{DATABASE_URL}'") # ADDED LOGGING
