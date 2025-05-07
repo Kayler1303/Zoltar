@@ -1,4 +1,9 @@
 import logging # Add logging import
+
+# Configure basic logging VERY EARLY, before other project imports
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Now, other imports can happen, and their loggers will use this basicConfig
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session, joinedload
@@ -22,8 +27,7 @@ from routers import ( # Assuming routers is a directory at the same level
     chat, auth_microsoft, lists, calendar, notes # Added new routers
 )
 
-# Configure basic logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+# Logger for main.py itself (can be defined after basicConfig)
 logger = logging.getLogger(__name__)
 
 # Default persistence frequency if not set on reminder
