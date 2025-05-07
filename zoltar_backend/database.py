@@ -28,18 +28,16 @@ if DATABASE_URL.startswith("postgresql"):
         # pool_size=10,
         # max_overflow=20
     )
-    # --- AGGRESSIVE DIAGNOSTIC ---
-    try:
-        db_module_logger.info("database.py: Attempting test connection immediately after engine creation...")
-        with engine.connect() as connection:
-            db_module_logger.info(f"database.py: Test connection successful! Connection: {connection}")
-            # You could even try a simple query:
-            result = connection.execute(text("SELECT 1"))
-            db_module_logger.info(f"database.py: Test query result: {result.scalar_one()}")
-        db_module_logger.info("database.py: Test connection closed successfully.")
-    except Exception as e:
-        db_module_logger.error(f"database.py: TEST CONNECTION FAILED! Error: {e}", exc_info=True)
-        # raise e # Optionally re-raise to halt startup if the test connection fails
+    # --- AGGRESSIVE DIAGNOSTIC (REMOVED) ---
+    # try:
+    #     db_module_logger.info("database.py: Attempting test connection immediately after engine creation...")
+    #     with engine.connect() as connection:
+    #         db_module_logger.info(f"database.py: Test connection successful! Connection: {connection}")
+    #         result = connection.execute(text("SELECT 1"))
+    #         db_module_logger.info(f"database.py: Test query result: {result.scalar_one()}")
+    #     db_module_logger.info("database.py: Test connection closed successfully.")
+    # except Exception as e:
+    #     db_module_logger.error(f"database.py: TEST CONNECTION FAILED! Error: {e}", exc_info=True)
     # --- END AGGRESSIVE DIAGNOSTIC ---
 
 elif DATABASE_URL: # Modified to ensure engine is always assigned if DATABASE_URL is not empty
@@ -49,7 +47,7 @@ elif DATABASE_URL: # Modified to ensure engine is always assigned if DATABASE_UR
     )
 else: # Handle case where DATABASE_URL is empty after os.getenv (if default was removed)
     db_module_logger.error("database.py: DATABASE_URL is empty. Cannot create engine.")
-    # Or raise an exception: raise ValueError("DATABASE_URL environment variable is not set.")
+    raise ValueError("DATABASE_URL environment variable is not set and no default provided.") # Make it fatal
 
 if engine is None:
     # This case should ideally not be reached if DATABASE_URL is always set or has a default
