@@ -1,6 +1,6 @@
 import os
 import logging # Import logging
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text # Add text for diagnostic query
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -17,6 +17,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./zoltar.db")
 db_module_logger.info(f"database.py: DATABASE_URL read from environment: '{DATABASE_URL}'") # ADDED LOGGING
 
 # --- Adjust engine creation based on URL ---
+engine = None # Initialize engine
+
 if DATABASE_URL.startswith("postgresql"):
     db_module_logger.info("database.py: Configuring engine for PostgreSQL with sslmode=disable.") # ADDED LOGGING
     engine = create_engine(
@@ -26,13 +28,34 @@ if DATABASE_URL.startswith("postgresql"):
         # pool_size=10,
         # max_overflow=20
     )
-else:
-    # For SQLite (requires connect_args)
+    # --- AGGRESSIVE DIAGNOSTIC ---
+    try:
+        db_module_logger.info("database.py: Attempting test connection immediately after engine creation...")
+        with engine.connect() as connection:
+            db_module_logger.info(f"database.py: Test connection successful! Connection: {connection}")
+            # You could even try a simple query:
+            result = connection.execute(text("SELECT 1"))
+            db_module_logger.info(f"database.py: Test query result: {result.scalar_one()}")
+        db_module_logger.info("database.py: Test connection closed successfully.")
+    except Exception as e:
+        db_module_logger.error(f"database.py: TEST CONNECTION FAILED! Error: {e}", exc_info=True)
+        # raise e # Optionally re-raise to halt startup if the test connection fails
+    # --- END AGGRESSIVE DIAGNOSTIC ---
+
+elif DATABASE_URL: # Modified to ensure engine is always assigned if DATABASE_URL is not empty
     db_module_logger.info(f"database.py: Configuring engine for non-PostgreSQL (e.g., SQLite). Current DATABASE_URL: '{DATABASE_URL}'") # ADDED LOGGING
     engine = create_engine(
         DATABASE_URL, connect_args={"check_same_thread": False}
     )
-# --- End adjustments ---
+else: # Handle case where DATABASE_URL is empty after os.getenv (if default was removed)
+    db_module_logger.error("database.py: DATABASE_URL is empty. Cannot create engine.")
+    # Or raise an exception: raise ValueError("DATABASE_URL environment variable is not set.")
+
+if engine is None:
+    # This case should ideally not be reached if DATABASE_URL is always set or has a default
+    db_module_logger.critical("database.py: Engine was not initialized!")
+    # Consider raising an error here to prevent the app from starting with no engine
+    raise RuntimeError("SQLAlchemy engine could not be initialized.")
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
